@@ -213,6 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.elements[player.index].style.backgroundColor = opponent.color;
         player.gameOver = true;
         alert("Game over");
+
       } else {
         this.route.path.push(player.index.toString());
 
