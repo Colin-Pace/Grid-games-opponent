@@ -132,37 +132,6 @@ document.addEventListener('DOMContentLoaded', () => {
         array.push(object);
       }
 
-      for (let i = 0; i < l_; i++) {
-        const obstacleElement = obstacle.coordinates[i];
-        const left = obstacleElement - 1;
-        const right = obstacleElement + 1;
-        const up = obstacleElement - grid.limit;
-        const down = obstacleElement + grid.limit;
-
-        const leftGridElement = grid.elements[left];
-        const rightGridElement = grid.elements[right];
-        const upGridElement = grid.elements[up];
-        const downGridElement = grid.elements[down];
-
-        if (left % grid.limit >= 1 &&
-            !leftGridElement.hasAttribute("obstacle")) {
-          array[left][obstacleElement] = true;
-        }
-
-        if (right % grid.limit <= grid.limit - 1 &&
-            !rightGridElement.hasAttribute("obstacle")) {
-          array[right][obstacleElement] = true;
-        }
-
-        if (up >= 0 && !upGridElement.hasAttribute("obstacle")) {
-          array[up][obstacleElement] = true;
-        }
-
-        if (down <= l && !downGridElement.hasAttribute("obstacle")) {
-          array[down][obstacleElement] = true;
-        }
-      }
-
       // Transform the array into an object and pass it to find path
       const len = array.length;
       for (let i = 0; i < len; i++) graph[i] = array[i][i]; // array[i] gives obstacle
@@ -170,6 +139,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateObject(graph) {
+      /* Add obstacle coordinates */
+      const l_ = obstacle.coordinates.length;
+      for (let i = 0; i < l_; i++) {
+        const obstacleElement = obstacle.coordinates[i];
+        graph[obstacleElement - 1][obstacleElement] = true;
+        graph[obstacleElement - grid.limit][obstacleElement] = true;
+        graph[obstacleElement + 1][obstacleElement] = true;
+        graph[obstacleElement + grid.limit][obstacleElement] = true;
+      }
+
       return graph;
     }
 
@@ -181,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       graph = this.updateObject(graph);
-      // console.log(graph);
+      //console.log(graph);
 
       const costs = Object.assign({finish: Infinity}, graph.start);
       const visited = [];
@@ -202,12 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
       while (node) {
         const costToNode = costs[node], children = graph[node];
         for (let child in children) {
-          const fromNodeToChild = children[child];
-          const costToChild = costToNode + fromNodeToChild;
-          if (!costs[child] || costs[child] > costToChild) {
-            if (Number(child) === player.index) costs["finish"] = costToChild;
-            costs[child] = costToChild;
-            parents[child] = node;
+          if (!obstacle.coordinates.includes(Number(child))) {
+            const fromNodeToChild = children[child];
+            const costToChild = costToNode + fromNodeToChild;
+            if (!costs[child] || costs[child] > costToChild) {
+              if (Number(child) === player.index) costs["finish"] = costToChild;
+              costs[child] = costToChild;
+              parents[child] = node;
+            }
           }
         }
         visited.push(node);
