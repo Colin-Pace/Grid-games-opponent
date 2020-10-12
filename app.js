@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this.color = "blue";
       this.index = 412;
       this.previousIndex;
+      this.gameOver = false;
     }
 
     create() {
@@ -30,6 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     move(e) {
+      if (player.gameOver === true) return;
+
       //console.log("Player index: " + player.index);
       /* Figure out how to remove the delay from keydown without keyup */
 
@@ -45,16 +48,19 @@ document.addEventListener('DOMContentLoaded', () => {
             player.index += grid.limit - 1;
           } else player.index -= 1;
           break;
+
         case 38:
           if (player.index <= grid.limit - 1 && player.index >= 0) {
             player.index += (grid.limit * grid.limit) - grid.limit;
           } else player.index -= grid.limit;
           break;
+
         case 39:
           if (player.index % grid.limit >= grid.limit - 1) {
             player.index -= grid.limit - 1;
           } else player.index += 1;
           break;
+
         case 40:
           if (player.index >= (grid.limit * grid.limit) - grid.limit) {
             player.index -= (grid.limit * grid.limit) - grid.limit;
@@ -68,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Draw the new grid element
+      // It does not work if the player moves into the route
+      // In the final product, the route might not be shown, so tbd on the fix
       grid.elements[player.index].style.backgroundColor = player.color;
       player.previousIndex = player.index;
 
@@ -161,25 +169,32 @@ document.addEventListener('DOMContentLoaded', () => {
       const costs = Object.assign({finish: Infinity}, this.graph.start);
       const visited = [];
       const parents = {finish: null};
+
       for (let child in this.graph.start) parents[child] = "start";
 
       const findLow = function(costs, visited) {
         const known = Object.keys(costs);
+
         const lowCost = known.reduce((low, node) => {
           if (!low && !visited.includes(node)) low = node;
           if (costs[low] > costs[node] && !visited.includes(node)) low = node;
           return low;
         }, null);
+
         return lowCost;
       }
 
       let node = findLow(costs, visited);
       while (node) {
         const costToNode = costs[node], children = this.graph[node];
+
+        // Prevent the path from going through the obstacle
+        // It does not work if the opponent is contiguous with the obstacle
         for (let child in children) {
           if (!obstacle.coordinates.includes(Number(child))) {
             const fromNodeToChild = children[child];
             const costToChild = costToNode + fromNodeToChild;
+
             if (!costs[child] || costs[child] > costToChild) {
               if (Number(child) === player.index) costs["finish"] = costToChild;
               costs[child] = costToChild;
@@ -187,12 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         }
+
         visited.push(node);
         node = findLow(costs, visited);
       }
 
       const optimalPath = ["finish"];
       let parent = parents[player.index];
+
       while (parent) {
         optimalPath.push(parent);
         parent = parents[parent];
@@ -213,13 +230,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      this.id = setInterval(this.move, 200);
+      this.id = setInterval(this.move, 100);
     }
 
     move() {
       if (this.moveOpponent === false) {
         clearInterval(this.id);
         grid.elements[player.index].style.backgroundColor = opponent.color;
+        player.gameOver = true;
+        alert("Game over");
       } else {
         this.route.path.push(player.index.toString());
 
