@@ -30,8 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     move(e) {
-      console.log("Player index: " + player.index);
-
+      //console.log("Player index: " + player.index);
       /* Figure out how to remove the delay from keydown without keyup */
 
       // Erase previous iteration and make obstacle not change color if crossed
@@ -71,25 +70,30 @@ document.addEventListener('DOMContentLoaded', () => {
       // Draw the new grid element
       grid.elements[player.index].style.backgroundColor = player.color;
       player.previousIndex = player.index;
+
+      clearInterval(opponent.id);
+      opponent.clearRoute();
     }
   }
 
   class Opponent {
     constructor() {
       this.color = "green";
-      this.index = 187;
+      this.index = null;
+      this.graph = {};
       this.pathColor = "orange";
       this.moveOpponent = true;
       this.playerMoved = false;
       this.route = null;
       this.itr = 1;
       this.id = null;
-      this.timer = 0;
+      this.switch = false;
 
       this.move = this.move.bind(this);
     }
 
     create() {
+      this.index = 187;
       grid.elements[this.index].style.backgroundColor = this.color;
     }
 
@@ -120,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
       const array = [];
-      const graph = {};
       const l = grid.elements.length;
       const l_ = obstacle.coordinates.length;
 
@@ -143,38 +146,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Transform the array into an object and pass it to find path
       const len = array.length;
-      for (let i = 0; i < len; i++) graph[i] = array[i][i];
-      opponent.findPath(graph);
+      for (let i = 0; i < len; i++) this.graph[i] = array[i][i];
     }
 
-    updateObject(graph) {
-      // Add obstacle coordinates
-      const l_ = obstacle.coordinates.length;
-      for (let i = 0; i < l_; i++) {
-        const obstacleElement = obstacle.coordinates[i];
-        graph[obstacleElement - 1][obstacleElement] = true;
-        graph[obstacleElement - grid.limit][obstacleElement] = true;
-        graph[obstacleElement + 1][obstacleElement] = true;
-        graph[obstacleElement + grid.limit][obstacleElement] = true;
-      }
+    findPath() {
+      // Problem: figure out how to start the opponent from the index that was reached when the player moved
 
-      return graph;
-    }
-
-    findPath(graph) {
       // Put start and finish in graph
-      for (let i in graph) {
-        if (Number(i) === opponent.index) graph["start"] = graph[i];
-        graph["finish"] = {};
+      for (let i in this.graph) {
+        if (Number(i) === this.index) this.graph["start"] = this.graph[i];
+        this.graph["finish"] = {};
       }
 
-      graph = this.updateObject(graph);
-      //console.log(graph);
-
-      const costs = Object.assign({finish: Infinity}, graph.start);
+      const costs = Object.assign({finish: Infinity}, this.graph.start);
       const visited = [];
       const parents = {finish: null};
-      for (let child in graph.start) parents[child] = "start";
+      for (let child in this.graph.start) parents[child] = "start";
 
       const findLow = function(costs, visited) {
         const known = Object.keys(costs);
@@ -188,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       let node = findLow(costs, visited);
       while (node) {
-        const costToNode = costs[node], children = graph[node];
+        const costToNode = costs[node], children = this.graph[node];
         for (let child in children) {
           if (!obstacle.coordinates.includes(Number(child))) {
             const fromNodeToChild = children[child];
@@ -226,8 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      this.id = setInterval(this.move, 300);
-      //this.move();
+      this.id = setInterval(this.move, 100);
     }
 
     move() {
@@ -242,16 +228,33 @@ document.addEventListener('DOMContentLoaded', () => {
         opponent.index = this.route.path[this.itr];
 
         // Draw the new grid element
-        if (grid.elements[this.route.path[this.itr]])
+        if (grid.elements[this.route.path[this.itr]]) {
           grid.elements[this.route.path[this.itr]].style.backgroundColor = opponent.color;
+          this.index = this.route.path[this.itr];
+        }
 
         this.itr++;
-        this.timer++;
 
         if (this.route.path[this.itr] === player.index.toString()) {
           this.moveOpponent = false;
         }
       }
+    }
+
+    clearRoute() {
+      this.itr = 1;
+      const l = this.route.path.length;
+      for (let i = 0; i < l; i++) {
+        if (grid.elements[this.route.path[i]]) {
+          grid.elements[this.route.path[i]].style.backgroundColor = grid.color;
+        }
+      }
+
+      this.route.path = [];
+      grid.elements[this.index].style.backgroundColor = opponent.color;
+
+      this.switch = true;
+      opponent.findPath();
     }
   }
 
@@ -283,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Development
   opponent.gridToObject();
+  opponent.findPath();
 
   document.addEventListener('keydown', player.move);
 })
