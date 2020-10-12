@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     move(e) {
-      //console.log(player.index);
+      console.log("Player index: " + player.index);
 
       /* Figure out how to remove the delay from keydown without keyup */
 
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     gridToObject() {
-      /* Make an array of dictionaries. The key is the grid element. The value is a dictionary with four key value pairs. The keys of the nested dictionary are left, right, up, and down. Their values are a boolean designation of whether the grid element relative to the current grid element contains an obstacle.
+      /* An array of dictionaries. The key is the grid element. The value is a dictionary with four key value pairs. The keys of the nested dictionary are left, right, up, and down. Their values are a boolean designation of whether the grid element relative to the current grid element contains an obstacle.
 
                 _____________________________________________
                 0
@@ -107,14 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 400
                 ...
                 600
-                _____________________________________________
+                _____________________________________________ */
 
-
-            First create an array of grid elements. Then use the obstacle list to update the traversable adjacent nodes in the array.
-
-            1. (grid.elements[0] - 1), (grid.elements[l - 1] + 1), and
-                (grid.elements[0 ... l - 1] + / - grid.limit):
-                in bounds and without obstacle? */
 
       const array = [];
       const graph = {};
@@ -123,12 +117,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       for (let i = 0; i < l; i++) {
         let object = {};
-        object[i] = {"l": false, "u": false, "r": false, "d": false};
+
+        const left = i - 1;
+        const up = i - grid.limit;
+        const right = i + 1;
+        const down = i + grid.limit;
+
+        object[i] = {};
+        if (i % grid.limit != 0) object[i][left] = 1;
+        if (i - (grid.limit - 1) > 0) object[i][up] = 1;
+        if ((i + 1) % grid.limit != 0) object[i][right] = 1;
+        if (i + grid.limit <= l) object[i][down] = 1;
+
         array.push(object);
       }
 
       for (let i = 0; i < l_; i++) {
-        // Agglutinated iterators
         const obstacleElement = obstacle.coordinates[i];
         const left = obstacleElement - 1;
         const right = obstacleElement + 1;
@@ -142,51 +146,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (left % grid.limit >= 1 &&
             !leftGridElement.hasAttribute("obstacle")) {
-          array[left]["r"] = true;
+          array[left][obstacleElement] = true;
         }
 
         if (right % grid.limit <= grid.limit - 1 &&
             !rightGridElement.hasAttribute("obstacle")) {
-          array[right]["l"] = true;
+          array[right][obstacleElement] = true;
         }
 
         if (up >= 0 && !upGridElement.hasAttribute("obstacle")) {
-          array[up]["d"] = true;
+          array[up][obstacleElement] = true;
         }
 
         if (down <= l && !downGridElement.hasAttribute("obstacle")) {
-          array[down]["u"] = true;
+          array[down][obstacleElement] = true;
         }
       }
 
       // Transform the array into an object and pass it to find path
       const len = array.length;
-      for (let i = 0; i < len; i++) graph[i] = array[i];
+      for (let i = 0; i < len; i++) graph[i] = array[i][i]; // array[i] gives obstacle
       opponent.findPath(graph);
     }
 
+    updateObject(graph) {
+      return graph;
+    }
+
     findPath(graph) {
-      //console.log(graph);
+      // Put start and finish in graph
+      for (let i in graph) {
+        if (Number(i) === opponent.index) graph["start"] = graph[i];
+        graph["finish"] = {};
+      }
 
-      /* Adjust dijkstra's algorithm to accomodate the graph
-          1. Graph model:
-                            const graph = {
-                              start: {A: 5, B: 2},
-                              A: {C: 4, D: 2},
-                              B: {A: 8, D: 7},
-                              C: {D: 6, finish: 3},
-                              D: {finish: 1},
-                              finish: {}
-                            };
-              A. Since the model tracks the distance between nodes,
-                  either update the graph (l, r, u, d > integers : 1 or if obstacle then null), or consider A*
+      graph = this.updateObject(graph);
+      // console.log(graph);
 
-          1. Start will be the opponent's grid element */
-
-      const costs = Object.assign({finish: Infinity}, graph.start)
+      const costs = Object.assign({finish: Infinity}, graph.start);
       const visited = [];
       const parents = {finish: null};
-      for (let child in graph.start) parents[child] = 'start';
+      for (let child in graph.start) parents[child] = "start";
 
       const findLow = function(costs, visited) {
         const known = Object.keys(costs);
@@ -205,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const fromNodeToChild = children[child];
           const costToChild = costToNode + fromNodeToChild;
           if (!costs[child] || costs[child] > costToChild) {
+            if (Number(child) === player.index) costs["finish"] = costToChild;
             costs[child] = costToChild;
             parents[child] = node;
           }
@@ -213,8 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
         node = findLow(costs, visited);
       }
 
-      const optimalPath = ['finish'];
-      let parent = parents.finish;
+      const optimalPath = ["finish"];
+      let parent = parents[player.index];
       while (parent) {
         optimalPath.push(parent);
         parent = parents[parent];
@@ -222,7 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
       optimalPath.reverse();
 
       const result = {distance: costs.finish, path: optimalPath};
-      //return result;
+      console.log(result);
     }
 
     move() {
