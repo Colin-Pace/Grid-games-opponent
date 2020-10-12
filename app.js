@@ -105,31 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     gridToObject() {
-      /* An array of dictionaries. The key is the grid element. The value is a dictionary with four key value pairs. The keys of the nested dictionary are left, right, up, and down. Their values are a boolean designation of whether the grid element relative to the current grid element contains an obstacle.
-
-                _____________________________________________
-                0
-                25
-                50
-                75
-                100
-                125
-                150
-                175
-                200
-                225
-                250                255 ... 269
-                275            279|280 ... 294|295
-                300                305 ... 319
-                325
-                350
-                375
-                400
-                ...
-                600
-                _____________________________________________ */
-
-
       const array = [];
       const l = grid.elements.length;
       const l_ = obstacle.coordinates.length;
@@ -229,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      this.id = setInterval(this.move, 100);
+      this.id = setInterval(this.move, 200);
     }
 
     move() {
