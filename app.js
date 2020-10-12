@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     constructor() {
       this.color = "green";
       this.index = 187;
+      this.pathColor = "orange";
     }
 
     create() {
@@ -204,7 +205,18 @@ document.addEventListener('DOMContentLoaded', () => {
       optimalPath.reverse();
 
       const result = {distance: costs.finish, path: optimalPath};
-      console.log(result);
+      //console.log(result);
+      this.printRoute(result);
+    }
+
+    printRoute(result) {
+      //console.log(result.path);
+      const l = result.path.length;
+      for (let i = 0; i < l; i++) {
+        if (grid.elements[result.path[i]]) {
+          grid.elements[Number(result.path[i])].style.backgroundColor = this.pathColor;
+        }
+      }
     }
 
     move() {
