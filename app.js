@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
       this.graph = {};
       this.pathColor = "orange";
       this.moveOpponent = true;
-      this.playerMoved = false;
       this.route = null;
       this.itr = 1;
       this.id = null;
@@ -254,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         this.itr++;
 
-        if (this.route.path[this.itr] === player.index.toString() || this.playerMoved === true) {
+        if (this.route.path[this.itr] === player.index.toString()) {
           this.moveOpponent = false;
         }
       }
