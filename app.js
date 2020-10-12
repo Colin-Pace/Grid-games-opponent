@@ -87,9 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
       this.route = null;
       this.itr = 1;
       this.id = null;
-      this.switch = false;
 
       this.move = this.move.bind(this);
+      this.findPath = this.findPath.bind(this);
     }
 
     create() {
@@ -150,11 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     findPath() {
-      // Problem: figure out how to start the opponent from the index that was reached when the player moved
-
       // Put start and finish in graph
       for (let i in this.graph) {
-        if (Number(i) === this.index) this.graph["start"] = this.graph[i];
+        if (Number(i) === Number(this.index)) {
+          this.graph["start"] = this.graph[i];
+        }
         this.graph["finish"] = {};
       }
 
@@ -213,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      this.id = setInterval(this.move, 100);
+      this.id = setInterval(this.move, 200);
     }
 
     move() {
@@ -235,7 +235,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         this.itr++;
 
-        if (this.route.path[this.itr] === player.index.toString()) {
+        if (this.route.path[this.itr] === player.index.toString() || this.playerMoved === true) {
           this.moveOpponent = false;
         }
       }
@@ -251,10 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       this.route.path = [];
-      grid.elements[this.index].style.backgroundColor = opponent.color;
-
-      this.switch = true;
-      opponent.findPath();
+      grid.elements[this.index].style.backgroundColor = opponent.color;      this.findPath();
     }
   }
 
