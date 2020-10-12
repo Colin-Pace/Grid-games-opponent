@@ -79,6 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
       this.color = "green";
       this.index = 187;
       this.pathColor = "orange";
+      this.moveOpponent = true;
+      this.playerMoved = false;
+      this.route = null;
+      this.itr = 1;
+      this.id = null;
+      this.timer = 0;
+
+      this.move = this.move.bind(this);
     }
 
     create() {
@@ -135,12 +143,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Transform the array into an object and pass it to find path
       const len = array.length;
-      for (let i = 0; i < len; i++) graph[i] = array[i][i]; // array[i] gives obstacle
+      for (let i = 0; i < len; i++) graph[i] = array[i][i];
       opponent.findPath(graph);
     }
 
     updateObject(graph) {
-      /* Add obstacle coordinates */
+      // Add obstacle coordinates
       const l_ = obstacle.coordinates.length;
       for (let i = 0; i < l_; i++) {
         const obstacleElement = obstacle.coordinates[i];
@@ -205,29 +213,45 @@ document.addEventListener('DOMContentLoaded', () => {
       optimalPath.reverse();
 
       const result = {distance: costs.finish, path: optimalPath};
-      //console.log(result);
-      this.printRoute(result);
+
+      this.route = result;
+      this.printRoute();
     }
 
-    printRoute(result) {
-      //console.log(result.path);
-      const l = result.path.length;
+    printRoute() {
+      const l = this.route.path.length;
       for (let i = 0; i < l; i++) {
-        if (grid.elements[result.path[i]]) {
-          grid.elements[Number(result.path[i])].style.backgroundColor = this.pathColor;
+        if (grid.elements[this.route.path[i]]) {
+          grid.elements[Number(this.route.path[i])].style.backgroundColor = this.pathColor;
         }
       }
+
+      this.id = setInterval(this.move, 300);
+      //this.move();
     }
 
     move() {
-      // const objectFromGrid = this.gridToObject();
-      // const path = this.findPath(graph);
+      if (this.moveOpponent === false) {
+        clearInterval(this.id);
+        grid.elements[player.index].style.backgroundColor = opponent.color;
+      } else {
+        this.route.path.push(player.index.toString());
 
-      // Erase previous iteration
-      grid.elements[player.index].style.backgroundColor = grid.color;
+        // Erase previous iteration
+        grid.elements[opponent.index].style.backgroundColor = grid.color;
+        opponent.index = this.route.path[this.itr];
 
-      // Draw the new grid element
-      grid.elements[player.index].style.backgroundColor = player.color;
+        // Draw the new grid element
+        if (grid.elements[this.route.path[this.itr]])
+          grid.elements[this.route.path[this.itr]].style.backgroundColor = opponent.color;
+
+        this.itr++;
+        this.timer++;
+
+        if (this.route.path[this.itr] === player.index.toString()) {
+          this.moveOpponent = false;
+        }
+      }
     }
   }
 
