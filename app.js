@@ -34,9 +34,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (player.gameOver === true) return;
 
       //console.log("Player index: " + player.index);
-      /* Figure out how to remove the delay from keydown without keyup */
+      // Figure out how to remove the delay from keydown without keyup
 
-      // Erase previous iteration and make obstacle not change color if crossed
+      // Erase previous iteration
       if (!obstacle.coordinates.includes(player.previousIndex)) {
         grid.elements[player.index].style.backgroundColor = grid.color;
       } else grid.elements[player.index].style.backgroundColor = obstacle.color;
@@ -150,8 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const known = Object.keys(costs);
 
         const lowCost = known.reduce((low, node) => {
+          // Prevent the path from going through the obstacle
+          if (obstacle.coordinates.includes(Number(node))) return low;
+
           if (!low && !visited.includes(node)) low = node;
           if (costs[low] > costs[node] && !visited.includes(node)) low = node;
+
           return low;
         }, null);
 
@@ -162,18 +166,15 @@ document.addEventListener('DOMContentLoaded', () => {
       while (node) {
         const costToNode = costs[node], children = this.graph[node];
 
-        // Prevent the path from going through the obstacle
-        // It does not work if the opponent is contiguous with the obstacle
-        for (let child in children) {
-          if (!obstacle.coordinates.includes(Number(child))) {
-            const fromNodeToChild = children[child];
-            const costToChild = costToNode + fromNodeToChild;
 
-            if (!costs[child] || costs[child] > costToChild) {
-              if (Number(child) === player.index) costs["finish"] = costToChild;
-              costs[child] = costToChild;
-              parents[child] = node;
-            }
+        for (let child in children) {
+          const fromNodeToChild = children[child];
+          const costToChild = costToNode + fromNodeToChild;
+
+          if (!costs[child] || costs[child] > costToChild) {
+            if (Number(child) === player.index) costs["finish"] = costToChild;
+            costs[child] = costToChild;
+            parents[child] = node;
           }
         }
 
