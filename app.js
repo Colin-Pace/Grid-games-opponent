@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", () => {
   class Grid {
     constructor() {
       this.color = "white";
@@ -96,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
       this.id = null;
 
       this.move = this.move.bind(this);
-      this.findPath = this.findPath.bind(this);
     }
 
     create() {
@@ -191,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       optimalPath.reverse();
 
-      const result = {distance: costs.finish, path: optimalPath};
+      const result = { distance: costs.finish, path: optimalPath };
 
       this.route = result;
       this.printRoute();
@@ -241,6 +240,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const l = this.route.path.length;
       for (let i = 0; i < l; i++) {
         if (grid.elements[this.route.path[i]]) {
+
+          // Do not clear the route grid element if it is player index
+          if (this.route.path[i] === player.index.toString()) continue;
+
           grid.elements[this.route.path[i]].style.backgroundColor = grid.color;
         }
       }
