@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     move(e) {
+      if (opponent.moveOpponent === false) this.announceGameOver();
       if (player.gameOver === true) return;
 
       //console.log("Player index: " + player.index);
@@ -81,6 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
       clearInterval(opponent.id);
       opponent.clearRoute();
+    }
+
+    announceGameOver() {
+      clearInterval(opponent.id);
+      grid.elements[player.index].style.backgroundColor = opponent.color;
+      player.gameOver = true;
+      alert("Game over");
     }
   }
 
@@ -209,10 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     move() {
       if (this.moveOpponent === false) {
-        clearInterval(this.id);
-        grid.elements[player.index].style.backgroundColor = opponent.color;
-        player.gameOver = true;
-        alert("Game over");
+        player.announceGameOver();
 
       } else {
         this.route.path.push(player.index.toString());
