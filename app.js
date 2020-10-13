@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
         player.previousIndex = player.index;
 
         clearInterval(opponent.id);
-        opponent.clearRoute();  
+        opponent.clearRoute();
       }
     }
 
