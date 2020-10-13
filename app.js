@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     move(e) {
-      if (opponent.moveOpponent === false) this.announceGameOver();
+      if (opponent.moveOpponent === false) player.announceGameOver();
       if (player.gameOver === true) return;
 
       //console.log("Player index: " + player.index);
@@ -69,26 +69,32 @@ document.addEventListener("DOMContentLoaded", () => {
           break;
       }
 
-      // Prevent the player from crossing the obstacle
+      // Prevent player from crossing the obstacle
       if (obstacle.coordinates.includes(player.index)) {
         player.index = player.previousIndex;
       }
 
-      // Draw the new grid element
-      // It does not work if the player moves into the route
-      // In the final product, the route might not be shown, so tbd on the fix
-      grid.elements[player.index].style.backgroundColor = player.color;
-      player.previousIndex = player.index;
+      // Prevent player from moving through opponent
+      if (player.index === Number(opponent.index)) player.announceGameOver();
+      else {
+        // Draw the new grid element
+        grid.elements[player.index].style.backgroundColor = player.color;
+        player.previousIndex = player.index;
 
-      clearInterval(opponent.id);
-      opponent.clearRoute();
+        clearInterval(opponent.id);
+        opponent.clearRoute();  
+      }
     }
 
     announceGameOver() {
       clearInterval(opponent.id);
       grid.elements[player.index].style.backgroundColor = opponent.color;
       player.gameOver = true;
-      alert("Game over");
+      opponent.moveOpponent = true; // prevents second alert if player moves
+
+      setTimeout(function() {
+        alert("Game over");
+      }, 100);
     }
   }
 
@@ -284,7 +290,6 @@ document.addEventListener("DOMContentLoaded", () => {
   opponent.create();
   obstacle.create();
 
-  // Development
   opponent.gridToObject();
   opponent.findPath();
 
