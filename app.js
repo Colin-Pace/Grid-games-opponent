@@ -260,7 +260,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       this.route.path = [];
-      grid.elements[this.index].style.backgroundColor = opponent.color;      this.findPath();
+      grid.elements[this.index].style.backgroundColor = opponent.color;
+      this.findPath();
     }
   }
 
